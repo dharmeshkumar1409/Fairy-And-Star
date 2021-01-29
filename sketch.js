@@ -2,14 +2,15 @@ const Engine = Matter.Engine;
 const World = Matter.World;
 const Bodies = Matter.Bodies;
 
-var engine, world, star;
-var bg, bgImg, starImg, fairies, fairiesImg;
+var engine, world, starBody;
+var bg, bgImg, star, starImg, fairies, fairiesImg, bgMusic;
 
 function preload() {
     //preload the images here
     starImg = loadImage("star.png");
     fairiesImg = loadAnimation("fairy1.png", "fairy2.png");
     bgImg = loadImage("starnight.png");
+    bgMusic = loadSound("JoyMusic.mp3");
 }
 
 function setup() {
@@ -21,6 +22,8 @@ function setup() {
     fairies = createSprite(200, 550, 30, 30);
     fairies.addAnimation("fairy", fairiesImg);
     fairies.scale = 0.3;
+    // fairies.debug = true;
+    fairies.setCollider("rectangle", 100, 200, 800, 500);
 
     engine = Engine.create();
 
@@ -30,13 +33,12 @@ function setup() {
         isStatic: true
     };
 
-    star = createSprite(600, 100, 30, 30, prop);
+    star = createSprite(750, 30, 30, 30, prop);
     star.addImage(starImg);
     star.scale = 0.3;
 
-    World.add(world, star);
-
-
+    starBody = Bodies.circle(750, 30, 5, { restitution: 0.4, isStatic: true });
+    World.add(world, starBody);
 
 }
 
@@ -44,11 +46,13 @@ function setup() {
 function draw() {
     background("grey");
 
+    bgMusic.play();
+
     Engine.update(engine);
 
     rectMode(CENTER);
-    star.x = star.position.x;
-    star.y = star.position.y;
+    star.x = starBody.position.x;
+    star.y = starBody.position.y;
 
     rect(star.position.x, star.position.y, 30, 30);
     drawSprites();
@@ -63,7 +67,12 @@ function draw() {
     }
 
     if (keyDown(DOWN_ARROW)) {
-        star.isStactic = false;
+        Matter.Body.setStatic(starBody, false);
     }
+
+    if (star.isTouching(fairies)) {
+        Matter.Body.setStatic(starBody, true);
+    }
+
 
 }
